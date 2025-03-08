@@ -1,3 +1,5 @@
+"use client";
+
 import useSwipe from "@/hooks/useSwipe";
 import { ComponentPropsWithoutRef, RefObject } from "react";
 
