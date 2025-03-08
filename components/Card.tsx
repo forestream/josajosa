@@ -11,7 +11,7 @@ export default function Card({
   return (
     <div
       className={twMerge(
-        "h-[400px] w-[300px] cursor-pointer rounded bg-white shadow-lg transition-transform hover:scale-[0.99]",
+        "h-[800px] w-[600px] cursor-pointer rounded bg-white shadow-lg transition-transform hover:scale-[0.99]",
         className,
       )}
       {...props}
