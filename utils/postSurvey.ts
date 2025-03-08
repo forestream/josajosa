@@ -1,3 +1,5 @@
+"use client";
+
 import { db } from "@/lib/firebase";
 import { addDoc, collection } from "firebase/firestore";
 
