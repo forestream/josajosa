@@ -1,7 +1,6 @@
 "use client";
 
 import Card from "@/components/Card";
-import Input from "@/components/TextInput";
 import Swiper from "@/components/Swiper";
 import useGetDocs from "@/hooks/useGetDocs";
 import { db } from "@/lib/firebase";
@@ -11,6 +10,7 @@ import { collection, limit, query } from "firebase/firestore";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import RadioInputs from "@/components/RadioInputs";
 import CheckboxInputs from "@/components/CheckboxInputs";
+import TextInput from "@/components/TextInput";
 
 export default function App() {
   const surveyQuery = useMemo(
@@ -40,16 +40,17 @@ export default function App() {
           questionId: questionDoc.id,
           question,
           type,
-          response: "",
+          response: type === "checkbox" ? [] : "",
         };
       }),
     );
   }, [questions]);
 
-  if (!questions.length) return null;
+  if (!questions.length || !responses.length) return null;
 
   const { question, options, type } = questions[index].data() as Question;
   const questionId = questions[index].id;
+  const { response } = responses[index];
 
   const handleNext = () =>
     setIndex(index + 1 >= questions.length ? 0 : index + 1);
@@ -58,6 +59,21 @@ export default function App() {
     e.preventDefault();
 
     const formData = new FormData(e.target as HTMLFormElement);
+    const keys = formData.keys().toArray();
+
+    setResponses((responses) =>
+      responses.map((response) => {
+        if (!keys.includes(response.questionId)) return response;
+
+        return {
+          ...response,
+          response:
+            response.type === "checkbox"
+              ? (formData.getAll(response.questionId) as string[])
+              : (formData.get(response.questionId) as string),
+        };
+      }),
+    );
   };
 
   return (
@@ -68,15 +84,23 @@ export default function App() {
             <h2 className="mb-4 text-xl">{question}</h2>
             {type === "radio" && (
               <RadioInputs
+                defaultValue={response as string}
                 options={options!}
                 name={questionId}
                 id={questionId}
                 className="mr-2"
               />
             )}
-            {type === "text" && <Input type="text" />}
+            {type === "text" && (
+              <TextInput
+                defaultValue={response}
+                name={questionId}
+                type="text"
+              />
+            )}
             {type === "checkbox" && (
               <CheckboxInputs
+                defaultValue={response as string[]}
                 options={options!}
                 name={questionId}
                 id={questionId}

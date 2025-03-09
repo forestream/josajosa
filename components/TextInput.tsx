@@ -3,11 +3,12 @@ import { twMerge } from "tailwind-merge";
 
 export default function TextInput({
   className,
+  defaultValue = "",
   ...props
 }: Omit<ComponentPropsWithoutRef<"input">, "type"> & {
   type: "text";
 }) {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(defaultValue);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) =>
     setValue(e.target.value);

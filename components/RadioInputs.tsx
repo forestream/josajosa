@@ -9,15 +9,18 @@ import Plop from "./Plop";
 
 type RadioInputsProps = {
   options: string[];
+  defaultValue?: string;
 };
 
 export default function RadioInputs({
   id,
   name,
   options,
+  defaultValue = "",
   ...props
-}: Omit<ComponentPropsWithoutRef<"input">, "type"> & RadioInputsProps) {
-  const [value, setValue] = useState("");
+}: Omit<ComponentPropsWithoutRef<"input">, "type" | "defaultValue"> &
+  RadioInputsProps) {
+  const [value, setValue] = useState(defaultValue);
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = (e) =>
     setValue(e.target.value);

@@ -7,7 +7,7 @@ export interface Response {
   questionId: string;
   question: string;
   type: "radio" | "checkbox" | "text";
-  response: string;
+  response: string | string[];
 }
 
 export interface SurveyResponse {

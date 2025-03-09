@@ -9,15 +9,18 @@ import Plop from "./Plop";
 
 type CheckboxInputsProps = {
   options: string[];
+  defaultValue?: string[];
 };
 
 export default function CheckboxInputs({
   id,
   name,
   options,
+  defaultValue = [],
   ...props
-}: Omit<ComponentPropsWithoutRef<"input">, "type"> & CheckboxInputsProps) {
-  const [values, setValues] = useState<string[]>([]);
+}: Omit<ComponentPropsWithoutRef<"input">, "type" | "defaultValue"> &
+  CheckboxInputsProps) {
+  const [values, setValues] = useState<string[]>(defaultValue);
 
   const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     if (values.includes(e.target.value)) {
