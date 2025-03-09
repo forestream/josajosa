@@ -1,7 +1,7 @@
 "use client";
 
 import { db } from "@/lib/firebase";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc, collection, Timestamp } from "firebase/firestore";
 
 export interface Response {
   questionId: string;
@@ -27,6 +27,7 @@ export default async function postResponse(surveyResponse: SurveyResponse) {
       question,
       type,
       response,
+      submittedAt: Timestamp.now(),
     });
   });
 }

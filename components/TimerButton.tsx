@@ -16,7 +16,7 @@ export default function TimerButton({
   ...props
 }: ComponentPropsWithRef<"button"> & TimerButtonProps) {
   return (
-    <div className="relative inline-block h-fit w-fit">
+    <div className="relative inline-block">
       <Button ref={ref} {...props}>
         {children}
       </Button>

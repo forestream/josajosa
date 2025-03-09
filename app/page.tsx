@@ -4,7 +4,7 @@ import Card from "@/components/Card";
 import Swiper from "@/components/Swiper";
 import useGetDocs from "@/hooks/useGetDocs";
 import { db } from "@/lib/firebase";
-import { Response } from "@/utils/postResponse";
+import postResponse, { Response } from "@/utils/postResponse";
 import { Question } from "@/utils/postSurvey";
 import { collection, limit, query } from "firebase/firestore";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -22,6 +22,7 @@ export default function App() {
   );
   const surveys = useGetDocs(surveyQuery);
   const surveyId = surveys[0]?.id;
+  const surveyTitle = surveys[0]?.get("title");
 
   const questionsQuery = useMemo(
     () => (surveyId ? collection(db, "surveys", surveyId, "questions") : null),
@@ -66,7 +67,7 @@ export default function App() {
           : index + amount,
     );
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleAnswer = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     const formData = new FormData(e.target as HTMLFormElement);
@@ -91,17 +92,22 @@ export default function App() {
     reset(() => {}, 1400);
   };
 
+  const handleSubmit = () => {
+    console.log({ responses, surveyId, surveyTitle });
+    postResponse({ responses, surveyId, surveyTitle });
+  };
+
   return (
     <>
       <header className="h-[100px]"></header>
       <main className="mx-auto max-w-[800px]">
         <div className="mb-4">
-          <p className="mr-20 text-right">
+          <p className="mr-20 text-right text-yellow-900">
             {index + 1} / {questions.length}
           </p>
         </div>
         <div className="flex items-center justify-center overflow-hidden">
-          <form className="relative" onSubmit={handleSubmit}>
+          <form className="relative" onSubmit={handleAnswer}>
             <Swiper contentKey={questionId}>
               <Card className="mb-4 h-[600px] w-[450px] px-12 py-8 text-yellow-950">
                 <h2 className="mb-4 text-xl">{question}</h2>
@@ -135,18 +141,25 @@ export default function App() {
                 )}
               </Card>
             </Swiper>
-            <Button className="mr-2" onClick={() => handleIndex(-1)}>
-              이전
-            </Button>
-            <TimerButton
-              delay={delay}
-              ref={clickRef}
-              current={current}
-              end={end}
-              onClick={() => handleIndex(1)}
-            >
-              다음
-            </TimerButton>
+            <div className="flex justify-between">
+              <div>
+                <Button className="mr-2" onClick={() => handleIndex(-1)}>
+                  이전
+                </Button>
+                <TimerButton
+                  delay={delay}
+                  ref={clickRef}
+                  current={current}
+                  end={end}
+                  onClick={() => handleIndex(1)}
+                >
+                  다음
+                </TimerButton>
+              </div>
+              <div>
+                <Button onClick={handleSubmit}>제출</Button>
+              </div>
+            </div>
           </form>
         </div>
       </main>
