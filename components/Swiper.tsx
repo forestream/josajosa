@@ -23,7 +23,7 @@ export default function Swiper({
   ...props
 }: ComponentPropsWithoutRef<"div"> & SwiperProps) {
   return (
-    <div className="relative">
+    <div className="relative z-10">
       <Content key={contentKey} {...props}>
         {children}
       </Content>

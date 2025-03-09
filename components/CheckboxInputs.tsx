@@ -17,6 +17,7 @@ export default function CheckboxInputs({
   name,
   options,
   defaultValue = [],
+  onChange,
   ...props
 }: Omit<ComponentPropsWithoutRef<"input">, "type" | "defaultValue"> &
   CheckboxInputsProps) {
@@ -28,6 +29,8 @@ export default function CheckboxInputs({
     } else {
       setValues((values) => [...values, e.target.value]);
     }
+
+    if (onChange) onChange(e);
   };
 
   const handleClickClone = (nextValue: string) => {

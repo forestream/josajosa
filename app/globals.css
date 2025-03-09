@@ -23,6 +23,17 @@
   --color-pastel-yellow-700: #e8d069;
   --color-pastel-yellow-800: #dec45c;
   --color-pastel-yellow-900: #d4b94f;
+
+  --color-grapefruit-0: #ffede1;
+  --color-grapefruit-100: #ffd4bf;
+  --color-grapefruit-200: #ffb89c;
+  --color-grapefruit-300: #ff9c7a;
+  --color-grapefruit-400: #ff8158;
+  --color-grapefruit-500: #f86a3e;
+  --color-grapefruit-600: #e85530;
+  --color-grapefruit-700: #cc4526;
+  --color-grapefruit-800: #b03a20;
+  --color-grapefruit-900: #942f1a;
 }
 
 @media (prefers-color-scheme: dark) {

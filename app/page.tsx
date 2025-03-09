@@ -11,6 +11,9 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import RadioInputs from "@/components/RadioInputs";
 import CheckboxInputs from "@/components/CheckboxInputs";
 import TextInput from "@/components/TextInput";
+import Button from "@/components/Button";
+import useTimer from "@/hooks/useTimer";
+import TimerButton from "@/components/TimerButton";
 
 export default function App() {
   const surveyQuery = useMemo(
@@ -28,6 +31,8 @@ export default function App() {
   const [index, setIndex] = useState(0);
 
   const [responses, setResponses] = useState<Response[]>([]);
+
+  const { clickRef, current, end, delay, reset } = useTimer(1400);
 
   useEffect(() => {
     if (!questions.length) return;
@@ -52,8 +57,14 @@ export default function App() {
   const questionId = questions[index].id;
   const { response } = responses[index];
 
-  const handleNext = () =>
-    setIndex(index + 1 >= questions.length ? 0 : index + 1);
+  const handleIndex = (amount: number) =>
+    setIndex(
+      index + amount >= questions.length
+        ? 0
+        : index + amount < 0
+          ? questions.length - 1
+          : index + amount,
+    );
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -76,43 +87,69 @@ export default function App() {
     );
   };
 
+  const handleTimer = () => {
+    reset(() => {}, 1400);
+  };
+
   return (
-    <main className="flex h-[100vh] items-center justify-center overflow-hidden">
-      <form onSubmit={handleSubmit}>
-        <Swiper contentKey={questionId}>
-          <Card className="mb-4 h-[600px] w-[450px] px-12 py-8 text-yellow-950">
-            <h2 className="mb-4 text-xl">{question}</h2>
-            {type === "radio" && (
-              <RadioInputs
-                defaultValue={response as string}
-                options={options!}
-                name={questionId}
-                id={questionId}
-                className="mr-2"
-              />
-            )}
-            {type === "text" && (
-              <TextInput
-                defaultValue={response}
-                name={questionId}
-                type="text"
-              />
-            )}
-            {type === "checkbox" && (
-              <CheckboxInputs
-                defaultValue={response as string[]}
-                options={options!}
-                name={questionId}
-                id={questionId}
-                className="mr-2"
-              />
-            )}
-          </Card>
-        </Swiper>
-        <button className="cursor-pointer" onClick={handleNext}>
-          next
-        </button>
-      </form>
-    </main>
+    <>
+      <header className="h-[100px]"></header>
+      <main className="mx-auto max-w-[800px]">
+        <div className="mb-4">
+          <p className="mr-20 text-right">
+            {index + 1} / {questions.length}
+          </p>
+        </div>
+        <div className="flex items-center justify-center overflow-hidden">
+          <form className="relative" onSubmit={handleSubmit}>
+            <Swiper contentKey={questionId}>
+              <Card className="mb-4 h-[600px] w-[450px] px-12 py-8 text-yellow-950">
+                <h2 className="mb-4 text-xl">{question}</h2>
+                {type === "radio" && (
+                  <RadioInputs
+                    onChange={handleTimer}
+                    defaultValue={response as string}
+                    options={options!}
+                    name={questionId}
+                    id={questionId}
+                    className="mr-2"
+                  />
+                )}
+                {type === "text" && (
+                  <TextInput
+                    onChange={handleTimer}
+                    defaultValue={response}
+                    name={questionId}
+                    type="text"
+                  />
+                )}
+                {type === "checkbox" && (
+                  <CheckboxInputs
+                    onChange={handleTimer}
+                    defaultValue={response as string[]}
+                    options={options!}
+                    name={questionId}
+                    id={questionId}
+                    className="mr-2"
+                  />
+                )}
+              </Card>
+            </Swiper>
+            <Button className="mr-2" onClick={() => handleIndex(-1)}>
+              이전
+            </Button>
+            <TimerButton
+              delay={delay}
+              ref={clickRef}
+              current={current}
+              end={end}
+              onClick={() => handleIndex(1)}
+            >
+              다음
+            </TimerButton>
+          </form>
+        </div>
+      </main>
+    </>
   );
 }

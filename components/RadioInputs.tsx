@@ -17,13 +17,16 @@ export default function RadioInputs({
   name,
   options,
   defaultValue = "",
+  onChange,
   ...props
 }: Omit<ComponentPropsWithoutRef<"input">, "type" | "defaultValue"> &
   RadioInputsProps) {
   const [value, setValue] = useState(defaultValue);
 
-  const handleChange: ChangeEventHandler<HTMLInputElement> = (e) =>
+  const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
     setValue(e.target.value);
+    if (onChange) onChange(e);
+  };
 
   return (
     <div className="flex w-full flex-col">
