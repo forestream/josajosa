@@ -6,7 +6,12 @@ import useGetDocs from "@/hooks/useGetDocs";
 import { db } from "@/lib/firebase";
 import postResponse, { Response } from "@/utils/postResponse";
 import { Question } from "@/utils/postSurvey";
-import { collection, limit, query } from "firebase/firestore";
+import {
+  collection,
+  limit,
+  query,
+  QueryDocumentSnapshot,
+} from "firebase/firestore";
 import {
   ChangeEvent,
   FormEvent,
@@ -59,22 +64,29 @@ export default function App() {
     reset(() => {}, 1400);
   }, [reset]);
 
+  const initializeResponses = useCallback(
+    (questions: QueryDocumentSnapshot[]) => {
+      setResponses(() =>
+        questions.map((questionDoc) => {
+          const { question, type } = questionDoc.data() as Question;
+
+          return {
+            questionId: questionDoc.id,
+            question,
+            type,
+            response: type === "checkbox" ? [] : "",
+          };
+        }),
+      );
+    },
+    [],
+  );
+
   useEffect(() => {
     if (!questions.length) return;
 
-    setResponses(() =>
-      questions.map((questionDoc) => {
-        const { question, type } = questionDoc.data() as Question;
-
-        return {
-          questionId: questionDoc.id,
-          question,
-          type,
-          response: type === "checkbox" ? [] : "",
-        };
-      }),
-    );
-  }, [questions]);
+    initializeResponses(questions);
+  }, [initializeResponses, questions]);
 
   const [fixResponseOpen, setFixResponseOpen] = useState(false);
 
@@ -124,9 +136,10 @@ export default function App() {
     );
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateResponses(responses)) {
-      postResponse({ responses, surveyId, surveyTitle });
+      await postResponse({ responses, surveyId, surveyTitle });
+      initializeResponses(questions);
     } else {
       setFixResponseOpen(true);
       validationReset(() => {
@@ -139,7 +152,6 @@ export default function App() {
     setIndex(responses.findIndex((item) => item.response.length === 0));
   };
 
-  console.log(responses);
   return (
     <>
       <header className="h-[100px]"></header>
