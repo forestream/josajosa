@@ -1,31 +1,37 @@
 import {
+  ChangeEvent,
   ChangeEventHandler,
   ComponentPropsWithoutRef,
   RefObject,
-  useState,
 } from "react";
 import Label from "./Label";
 import Plop from "./Plop";
 
 type RadioInputsProps = {
   options: string[];
-  defaultValue?: string;
+  resetTimer?: () => void;
 };
 
 export default function RadioInputs({
   id,
   name,
   options,
-  defaultValue = "",
+  value,
   onChange,
+  resetTimer,
   ...props
 }: Omit<ComponentPropsWithoutRef<"input">, "type" | "defaultValue"> &
   RadioInputsProps) {
-  const [value, setValue] = useState(defaultValue);
-
   const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    setValue(e.target.value);
     if (onChange) onChange(e);
+    if (resetTimer) resetTimer();
+  };
+
+  const handleClickClone = (nextValue: string) => {
+    if (onChange)
+      onChange({
+        target: { value: nextValue },
+      } as ChangeEvent<HTMLInputElement>);
   };
 
   return (
@@ -35,6 +41,7 @@ export default function RadioInputs({
 
         return (
           <Plop
+            onClick={() => handleClickClone(option)}
             key={innerId}
             render={(ref) => {
               return (

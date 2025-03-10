@@ -1,8 +1,8 @@
 import {
+  ChangeEvent,
   ChangeEventHandler,
   ComponentPropsWithoutRef,
   RefObject,
-  useState,
 } from "react";
 import Label from "./Label";
 import Plop from "./Plop";
@@ -10,35 +10,29 @@ import Plop from "./Plop";
 type CheckboxInputsProps = {
   options: string[];
   defaultValue?: string[];
+  resetTimer?: () => void;
 };
 
 export default function CheckboxInputs({
   id,
   name,
   options,
-  defaultValue = [],
   onChange,
+  value,
+  resetTimer,
   ...props
 }: Omit<ComponentPropsWithoutRef<"input">, "type" | "defaultValue"> &
   CheckboxInputsProps) {
-  const [values, setValues] = useState<string[]>(defaultValue);
-
   const handleChange: ChangeEventHandler<HTMLInputElement> = (e) => {
-    if (values.includes(e.target.value)) {
-      setValues((values) => values.filter((value) => value !== e.target.value));
-    } else {
-      setValues((values) => [...values, e.target.value]);
-    }
-
     if (onChange) onChange(e);
+    if (resetTimer) resetTimer();
   };
 
   const handleClickClone = (nextValue: string) => {
-    if (values.includes(nextValue)) {
-      setValues((values) => values.filter((value) => value !== nextValue));
-    } else {
-      setValues((values) => [...values, nextValue]);
-    }
+    if (onChange)
+      onChange({
+        target: { value: nextValue },
+      } as ChangeEvent<HTMLInputElement>);
   };
 
   return (
@@ -62,7 +56,7 @@ export default function CheckboxInputs({
                   >
                     <input
                       onChange={handleChange}
-                      checked={values.includes(option)}
+                      checked={(value as string[]).includes(option)}
                       type="checkbox"
                       id={innerId}
                       value={option}

@@ -7,13 +7,26 @@ import { db } from "@/lib/firebase";
 import postResponse, { Response } from "@/utils/postResponse";
 import { Question } from "@/utils/postSurvey";
 import { collection, limit, query } from "firebase/firestore";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import RadioInputs from "@/components/RadioInputs";
 import CheckboxInputs from "@/components/CheckboxInputs";
 import TextInput from "@/components/TextInput";
 import Button from "@/components/Button";
 import useTimer from "@/hooks/useTimer";
 import TimerButton from "@/components/TimerButton";
+import validateResponses from "@/utils/validateResponses";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 export default function App() {
   const surveyQuery = useMemo(
@@ -34,6 +47,17 @@ export default function App() {
   const [responses, setResponses] = useState<Response[]>([]);
 
   const { clickRef, current, end, delay, reset } = useTimer(1400);
+  const {
+    clickRef: validationClickRef,
+    current: validationCurrent,
+    end: validationEnd,
+    delay: validationDelay,
+    reset: validationReset,
+  } = useTimer(1400);
+
+  const handleTimer = useCallback(() => {
+    reset(() => {}, 1400);
+  }, [reset]);
 
   useEffect(() => {
     if (!questions.length) return;
@@ -52,6 +76,8 @@ export default function App() {
     );
   }, [questions]);
 
+  const [fixResponseOpen, setFixResponseOpen] = useState(false);
+
   if (!questions.length || !responses.length) return null;
 
   const { question, options, type } = questions[index].data() as Question;
@@ -69,52 +95,70 @@ export default function App() {
 
   const handleAnswer = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+  };
 
-    const formData = new FormData(e.target as HTMLFormElement);
-    const keys = formData.keys().toArray();
-
+  const handleResponse = (
+    e: ChangeEvent<HTMLInputElement>,
+    responseIndex: number,
+  ) => {
     setResponses((responses) =>
-      responses.map((response) => {
-        if (!keys.includes(response.questionId)) return response;
+      responses.map((item, i) => {
+        if (responseIndex !== i) return item;
+
+        const { type, response } = item;
+
+        const nextResponse =
+          type === "checkbox"
+            ? response.includes(e.target.value)
+              ? (response as string[]).filter(
+                  (value) => value !== e.target.value,
+                )
+              : (response as string[]).concat(e.target.value)
+            : e.target.value;
 
         return {
-          ...response,
-          response:
-            response.type === "checkbox"
-              ? (formData.getAll(response.questionId) as string[])
-              : (formData.get(response.questionId) as string),
+          ...item,
+          response: nextResponse,
         };
       }),
     );
   };
 
-  const handleTimer = () => {
-    reset(() => {}, 1400);
-  };
-
   const handleSubmit = () => {
-    console.log({ responses, surveyId, surveyTitle });
-    postResponse({ responses, surveyId, surveyTitle });
+    if (validateResponses(responses)) {
+      postResponse({ responses, surveyId, surveyTitle });
+    } else {
+      setFixResponseOpen(true);
+      validationReset(() => {
+        setFixResponseOpen(false);
+      }, 1800);
+    }
   };
 
+  const handleFixResponse = () => {
+    setIndex(responses.findIndex((item) => item.response.length === 0));
+  };
+
+  console.log(responses);
   return (
     <>
       <header className="h-[100px]"></header>
       <main className="mx-auto max-w-[800px]">
-        <div className="mb-4">
+        <div className="shadow-pastel-yellow-400 relative z-10 shadow-[0_0_8px_8px]">
           <p className="mr-20 text-right text-yellow-900">
             {index + 1} / {questions.length}
           </p>
         </div>
-        <div className="flex items-center justify-center overflow-hidden">
+        <div className="flex items-center justify-center">
           <form className="relative" onSubmit={handleAnswer}>
-            <Swiper contentKey={questionId}>
+            <Swiper contentKey={questionId} className="py-4">
               <Card className="mb-4 h-[600px] w-[450px] px-12 py-8 text-yellow-950">
                 <h2 className="mb-4 text-xl">{question}</h2>
                 {type === "radio" && (
                   <RadioInputs
-                    onChange={handleTimer}
-                    defaultValue={response as string}
+                    onChange={(e) => handleResponse(e, index)}
+                    resetTimer={handleTimer}
+                    value={response as string}
                     options={options!}
                     name={questionId}
                     id={questionId}
@@ -123,16 +167,18 @@ export default function App() {
                 )}
                 {type === "text" && (
                   <TextInput
-                    onChange={handleTimer}
-                    defaultValue={response}
+                    onChange={(e) => handleResponse(e, index)}
+                    resetTimer={handleTimer}
+                    value={response}
                     name={questionId}
                     type="text"
                   />
                 )}
                 {type === "checkbox" && (
                   <CheckboxInputs
-                    onChange={handleTimer}
-                    defaultValue={response as string[]}
+                    onChange={(e) => handleResponse(e, index)}
+                    resetTimer={handleTimer}
+                    value={response as string[]}
                     options={options!}
                     name={questionId}
                     id={questionId}
@@ -141,7 +187,7 @@ export default function App() {
                 )}
               </Card>
             </Swiper>
-            <div className="flex justify-between">
+            <div className="shadow-pastel-yellow-400 relative z-10 flex justify-between py-4 shadow-[0_0_8px_8px]">
               <div>
                 <Button className="mr-2" onClick={() => handleIndex(-1)}>
                   이전
@@ -157,7 +203,29 @@ export default function App() {
                 </TimerButton>
               </div>
               <div>
-                <Button onClick={handleSubmit}>제출</Button>
+                <Popover open={fixResponseOpen}>
+                  <PopoverTrigger asChild>
+                    <Button onClick={handleSubmit}>제출</Button>
+                  </PopoverTrigger>
+                  <PopoverContent side="right" sideOffset={12}>
+                    <p className="mb-4 text-center">
+                      미완료 질문을 확인하시겠습니까?
+                    </p>
+                    <div className="flex justify-center">
+                      <TimerButton
+                        delay={validationDelay}
+                        ref={validationClickRef}
+                        current={validationCurrent}
+                        end={validationEnd}
+                        onClick={handleFixResponse}
+                        className="mr-2"
+                      >
+                        네
+                      </TimerButton>
+                      <Button>그냥 제출할래요</Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
           </form>

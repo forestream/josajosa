@@ -1,19 +1,19 @@
-import { ChangeEvent, ComponentPropsWithoutRef, useState } from "react";
+import { ChangeEvent, ComponentPropsWithoutRef } from "react";
 import { twMerge } from "tailwind-merge";
 
 export default function TextInput({
-  className,
-  defaultValue = "",
   onChange,
+  value,
+  className,
+  resetTimer,
   ...props
 }: Omit<ComponentPropsWithoutRef<"input">, "type"> & {
   type: "text";
+  resetTimer?: () => void;
 }) {
-  const [value, setValue] = useState(defaultValue);
-
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
     if (onChange) onChange(e);
+    if (resetTimer) resetTimer();
   };
 
   return (

@@ -45,7 +45,7 @@ export default function useTimer(
 
         interval.current = setInterval(() => {
           setCurrent(Date.now());
-        }, 50) as unknown as number;
+        }, 1000 / 60) as unknown as number;
 
         const now = Date.now();
         setEnd(now + delay);

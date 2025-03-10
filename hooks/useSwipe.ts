@@ -1,48 +1,43 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
+
+const variants = {
+  top: ["-translate-y-full", "opacity-0"],
+  bottom: ["translate-y-full", "opacity-0"],
+  right: ["translate-x-full", "opacity-0"],
+  left: ["-translate-x-full", "opacity-0"],
+};
 
 export default function useSwipe() {
   const ref = useRef<HTMLElement | null>(null);
 
-  useLayoutEffect(() => {
+  const addTransition = useCallback(function addTransition() {
     if (!ref.current) return;
 
-    ref.current.classList.remove("-translate-y-full");
-
-    ref.current.classList.add(
-      "translate-y-full",
-      "opacity-0",
-      "transition-all",
-      "duration-500",
-    );
+    ref.current.classList.add("transition-all", "duration-500");
   }, []);
 
-  useEffect(() => {
+  const removeTransition = useCallback(function removeTransition() {
     if (!ref.current) return;
 
-    const element = ref.current;
-
-    const parent = element.parentNode as HTMLElement;
-
-    setTimeout(() => {
-      element.classList.remove("translate-y-full", "opacity-0");
-    }, 0);
-
-    return () => {
-      const clone = element.cloneNode(true) as HTMLElement;
-      clone.classList.add("absolute", "top-0", "left-0");
-      parent.appendChild(clone);
-
-      setTimeout(() => {
-        clone.classList.add("transition-all", "-translate-y-full", "opacity-0");
-      }, 0);
-
-      setTimeout(() => {
-        clone.remove();
-      }, 500);
-    };
+    ref.current.classList.remove("transition-all", "duration-500");
   }, []);
 
-  return { ref };
+  const swipe = useCallback(function swipe(
+    directive: "in" | "out",
+    side: "top" | "bottom" | "right" | "left",
+  ) {
+    if (!ref.current) return;
+
+    if (directive === "in") {
+      ref.current.classList.remove(...variants[side]);
+    }
+
+    if (directive === "out") {
+      ref.current.classList.add(...variants[side]);
+    }
+  }, []);
+
+  return { ref, addTransition, removeTransition, swipe };
 }
