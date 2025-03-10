@@ -159,19 +159,21 @@ export default function App() {
 
   return (
     <>
-      <header className="h-[100px]"></header>
       <main className="mx-auto max-w-[800px]">
+        <div className="">
+          <p className="mb-2.5 ml-20 text-2xl text-yellow-800">{surveyTitle}</p>
+        </div>
         <div className="shadow-pastel-yellow-400 relative z-10 shadow-[0_0_8px_8px]">
           <p className="mr-20 text-right text-yellow-900">
             {index + 1} / {questions.length}
           </p>
         </div>
         <div className="flex items-center justify-center">
-          <form className="relative" onSubmit={handleAnswer}>
+          <form className="" onSubmit={handleAnswer}>
             <Swiper
               flow={flow === "next" ? "left" : "right"}
               contentKey={questionId}
-              className="py-4"
+              className="px-2 py-4"
             >
               <Card className="mb-4 h-[600px] w-[450px] px-12 py-8 text-yellow-950">
                 <h2 className="mb-4 text-xl">{question}</h2>

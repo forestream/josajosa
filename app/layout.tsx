@@ -3,6 +3,7 @@ import { Geist_Mono, Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 import Background from "./_components/Background";
 import clsx from "clsx";
+import Link from "next/link";
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
@@ -29,7 +30,14 @@ export default function RootLayout({
       <body
         className={clsx(geistMono.variable, notoSans.variable, "antialiased")}
       >
-        <Background>{children}</Background>
+        <Background>
+          <header className="px-20 py-4 text-2xl">
+            <Link href={"/"} className="inline-block w-fit cursor-pointer p-4">
+              <h1 className="font-extralight select-none">조사조사</h1>
+            </Link>
+          </header>
+          {children}
+        </Background>
       </body>
     </html>
   );
