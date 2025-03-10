@@ -48,6 +48,7 @@ export default function App() {
   );
   const questions = useGetDocs(questionsQuery);
   const [index, setIndex] = useState(0);
+  const [flow, setFlow] = useState<"next" | "prev">("next");
 
   const [responses, setResponses] = useState<Response[]>([]);
 
@@ -96,7 +97,10 @@ export default function App() {
   const questionId = questions[index].id;
   const { response } = responses[index];
 
-  const handleIndex = (amount: number) =>
+  const handleIndex = (amount: number) => {
+    if (amount < 0) setFlow("prev");
+    else setFlow("next");
+
     setIndex(
       index + amount >= questions.length
         ? 0
@@ -104,6 +108,7 @@ export default function App() {
           ? questions.length - 1
           : index + amount,
     );
+  };
 
   const handleAnswer = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -163,7 +168,11 @@ export default function App() {
         </div>
         <div className="flex items-center justify-center">
           <form className="relative" onSubmit={handleAnswer}>
-            <Swiper contentKey={questionId} className="py-4">
+            <Swiper
+              flow={flow === "next" ? "left" : "right"}
+              contentKey={questionId}
+              className="py-4"
+            >
               <Card className="mb-4 h-[600px] w-[450px] px-12 py-8 text-yellow-950">
                 <h2 className="mb-4 text-xl">{question}</h2>
                 {type === "radio" && (
